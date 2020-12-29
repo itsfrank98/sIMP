@@ -1,0 +1,7 @@
+int dim = 4;
+array [dim] a = [1,2,3,4];
+int i = 0;
+while (i < dim){
+a[i] = i^2;
+i = i+1;
+}

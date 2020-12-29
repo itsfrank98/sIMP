@@ -1,0 +1,11 @@
+bool a = True;
+int b = 2;
+int c;
+c = 21;
+c = 4;
+bool cb;
+array[c] ar = [1,2,3,9];
+if(c < b){
+    cLessb = True;
+}
+int cb = c;

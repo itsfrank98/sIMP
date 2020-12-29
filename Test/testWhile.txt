@@ -1,0 +1,9 @@
+int a =1;
+int b;
+array [6] a;
+if (a == 0) {
+b = 10;
+while (a < 10){
+a = a+1;
+}
+}
