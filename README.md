@@ -5,7 +5,8 @@ The two main modules are the **parser** and the **interpreter**. The parser chec
 The interpreter works using this representation to actually run the code. The execution of the program can either return an error if some illegal actions were performed (like trying to read from a variable that doesn't exist, or the state of the memory. The error consists of an error message and the action that caused the error. If the execution ended successfully, then the current state of the memory is returned.
 
 <h2> Extended Backus Naur form of the supported grammar </h2>
-```
+
+```lang-none
 program ::= com | program
 
 com ::= declareBoolean ";"
