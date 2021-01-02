@@ -24,12 +24,12 @@ data AExpr =
     deriving Show
 
 -- Boolean expressions
-data BExp =
+data BExpr =
     BVal Bool
     | IdentifierBool String
-    | And BExp BExp
-    | Or BExp BExp
-    | Not BExp
+    | And BExpr BExpr
+    | Or BExpr BExpr
+    | Not BExpr
     | Lt AExpr AExpr
     | Gt AExpr AExpr
     | Eq AExpr AExpr
@@ -39,16 +39,16 @@ data BExp =
     deriving Show
 
 -- Commands
-data Com = DeclareBoolean String (Maybe BExp)
+data Com = DeclareBoolean String (Maybe BExpr)
     | DeclareInteger String (Maybe AExpr)
     | DeclareArray String AExpr (Maybe AExpr)
-    | AssignBoolean String BExp
+    | AssignBoolean String BExpr
     | AssignArrayPosition String AExpr AExpr --Assign a value to a specific array cell. Example: array[4] = 5
     | AssignWholeArray String AExpr --Assign whole array to a pre-declared variable. Example: a = [1,2,3,4]
     | AssignInteger String AExpr
-    | Ifelse BExp Program (Maybe Program)
-    | Whiledo BExp Program
-    | Dowhile Program BExp
+    | Ifelse BExpr Program (Maybe Program)
+    | Whiledo BExpr Program
+    | Dowhile Program BExpr
     | Skip
     deriving Show
 {--
