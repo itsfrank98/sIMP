@@ -1,0 +1,12 @@
+int a = 0;
+do{
+    a = a+1;
+} while (a<0);
+
+array[2] c;
+int i = 0;
+do{
+c[i] = i;
+i = i+1;
+}
+while(i <= 2);

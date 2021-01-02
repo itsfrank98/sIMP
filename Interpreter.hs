@@ -218,4 +218,11 @@ programExec ((Whiledo cond prog) : cs) env =
         Error a -> ErrorEnv (a, (Whiledo cond prog))
         Result True -> programExec (prog ++ [Whiledo cond prog] ++ cs) env
         Result False -> programExec cs env
+programExec ((Dowhile prog cond) : cs) env =
+    case (programExec prog env) of
+        ErrorEnv (msg, com) -> ErrorEnv (msg, (Dowhile prog cond))
+        ResultEnv env -> case (evalBexp cond env) of
+            Error a -> ErrorEnv (a, (Dowhile prog cond))
+            Result True -> programExec ([Dowhile prog cond] ++ cs) env
+            Result False -> programExec cs env
 programExec (Skip : cs) env = programExec cs env

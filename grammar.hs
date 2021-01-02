@@ -10,7 +10,7 @@ instance Show Values where
     show (Boolean b) = "Boolean " ++ show b
     show (Array ar) = "Array " ++ show ar
 
---Arithmetic operations (sum, div, prod, power). 
+--Arithmetic expressions
 data AExpr =
     Const Int
     | ConstArr [Int]
@@ -22,17 +22,8 @@ data AExpr =
     | Prod AExpr AExpr
     | Power AExpr AExpr
     deriving Show
-{--
-instance Show AExpr where
-    show (Const a) = show a
-    show (Ar n s) = "Array " ++ show n ++ "of size " ++ show s
-    show (ArithmeticIdentifier i) = show i
-    show (Add a1 a2) = "Sum: [" ++ show a1 ++ " + " ++ show a2 ++ "]"
-    show (Diff a1 a2) = "Difference: [ " ++ show a1 ++ " - " ++ show a2 ++ "]"
-    show (Div a1 a2) = "Division: [ " ++ show a1 ++ " / " ++ show a2 ++ "]"
-    show (Prod a1 a2) = "Product: [ " ++ show a1 ++ " * " ++ show a2 ++ "]"
-    show (Power a1 a2) = "[" ++ show a1 ++ " power " ++ show a2 ++ "]"
--}
+
+-- Boolean expressions
 data BExp =
     BVal Bool
     | IdentifierBool String
@@ -46,20 +37,8 @@ data BExp =
     | Lte AExpr AExpr
     | Gte AExpr AExpr
     deriving Show
-{--
-instance Show BExp where
-    show (BVal b) = "{" ++ show b ++ "}"
-    show (IdentifierBool i) = "Bool " ++ show i
-    show (And a b) = "{" ++ show a ++ " and " ++ show b ++ "}"
-    show (Or a b) = "{" ++ show a ++ " or " ++ show b ++ "}"
-    show (Not a) = "not {" ++ show a ++ "}"
-    show (Lt a b) = show a ++ " lt " ++ show b
-    show (Gt a b) = show a ++ " gt " ++ show b
-    show (Eq a b) = show a ++ " equals " ++ show b
-    show (Different a b) = show a ++ " different " ++ show b
-    show (Lte a b) = show a ++ " lte " ++ show b
-    show (Gte a b) = show a ++ " gte " ++ show b
--}
+
+-- Commands
 data Com = DeclareBoolean String (Maybe BExp)
     | DeclareInteger String (Maybe AExpr)
     | DeclareArray String AExpr (Maybe AExpr)
@@ -69,6 +48,7 @@ data Com = DeclareBoolean String (Maybe BExp)
     | AssignInteger String AExpr
     | Ifelse BExp Program (Maybe Program)
     | Whiledo BExp Program
+    | Dowhile Program BExp
     | Skip
     deriving Show
 {--

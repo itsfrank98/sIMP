@@ -130,7 +130,6 @@ charP x = sat (== x)
 stringP :: String -> Parser String
 stringP input = sequenceA (map charP input)
 
-
 -- Parser of a single identifier
 singleIdentifierP :: Parser String
 singleIdentifierP =
@@ -320,7 +319,9 @@ commandP =
     ifThenElse
     <|>
     while
-    <|>    
+    <|>
+    dowhile
+    <|>
     skip
 
 programP :: Parser [Com]
@@ -435,6 +436,19 @@ while = do
     prog <- programP
     symbolP "}"
     return (Whiledo condition prog)
+
+dowhile :: Parser Com
+dowhile = do
+    symbolP "do"
+    symbolP "{"
+    prog <- programP
+    symbolP "}"
+    symbolP "while"
+    symbolP "("
+    condition <- bExprP
+    symbolP ")"
+    symbolP ";"
+    return (Dowhile prog condition)
 
 skip :: Parser Com
 skip = do
