@@ -1,5 +1,5 @@
 module Parser where
-import Grammar(AExpr(..), BExp(..), Com(..), Values(..))
+import Grammar(AExpr(..), BExpr(..), Com(..), Values(..))
 import Utils(isDigit, isUpper, isLower, isLetter, isAlphaNum, isSpace)
 
 newtype Parser a = P{
@@ -237,19 +237,19 @@ arithmeticFactor = do
             return (ArithmeticIdentifier i)
 
 -- Boolean expressions Parser
-bExprP :: Parser  BExp
+bExprP :: Parser  BExpr
 bExprP = booleanParser1 `chain` op where
     op = do
         symbolP "or"
         return Or
 
-booleanParser1 :: Parser BExp
+booleanParser1 :: Parser BExpr
 booleanParser1 = booleanParser2 `chain` op where
     op = do
         symbolP "and"
         return And
 
-booleanParser2 :: Parser BExp
+booleanParser2 :: Parser BExpr
 booleanParser2 = do
     symbolP "True"
     return (BVal True)
@@ -260,9 +260,9 @@ booleanParser2 = do
     <|>
     do
         symbolP "("
-        bExpr <- bExprP
+        bExpression <- bExprP
         symbolP ")"
-        return bExpr
+        return bExpression
     <|>
     do
         symbolP "!"
@@ -452,5 +452,6 @@ dowhile = do
 
 skip :: Parser Com
 skip = do
-    symbolP "Skip;"
+    symbolP "skip"
+    symbolP ";"
     return Skip

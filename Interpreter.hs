@@ -1,5 +1,5 @@
 module Interpreter where
-import Grammar(AExpr(..), BExp(..), Com(..), Values(..))
+import Grammar(AExpr(..), BExpr(..), Com(..), Values(..))
 import Utils(readArray, power, ratio, createEmptyArray, writeArray, removeElem)
 
 data Variable = Variable {
@@ -12,7 +12,7 @@ instance Show Variable where
 
 type Env = [Variable]
 
---This is the data returned by evalAexp, evalArrayOperation and evalBexp. If the evaluation was successful, then the result will be put into the
+--This is the data returned by evalAexpr, evalArrayOperation and evalBExpr. If the evaluation was successful, then the result will be put into the
 -- 'result' field. If some errors occured, then the error message will be returned 
 data Output a =
     Result a
@@ -66,31 +66,31 @@ findVariable (x:xs) n t = if (var_name x) == n && (var_type x) == t
     then 0
     else (+1)(findVariable xs n t)
 
--- evalAexp (Ar "b" (Const 4)) [Variable{var_name="v",var_type= "b",var_value=(Just(Integer 3))}] FAIL
--- evalAexp (Ar "b" (Const 4)) [Variable{var_name="b",var_type= "array",var_value=(Just (Array [3,4,5,4,5]))}] SUCCESS
--- evalAexp (ArithmeticIdentifier "b") [Variable{var_name="b",var_type= "int",var_value= Just(Integer 4)}]
-evalAexp :: AExpr -> Env -> Output Int
-evalAexp (Const k) _ = Result k
-evalAexp (Ar name pos) env = 
+-- evalAexpr (Ar "b" (Const 4)) [Variable{var_name="v",var_type= "b",var_value=(Just(Integer 3))}] FAIL
+-- evalAexpr (Ar "b" (Const 4)) [Variable{var_name="b",var_type= "array",var_value=(Just (Array [3,4,5,4,5]))}] SUCCESS
+-- evalAexpr (ArithmeticIdentifier "b") [Variable{var_name="b",var_type= "int",var_value= Just(Integer 4)}]
+evalAexpr :: AExpr -> Env -> Output Int
+evalAexpr (Const k) _ = Result k
+evalAexpr (Ar name pos) env = 
     case (readEnv env name "array") of
         Nothing -> Error "The array does not exist"
         Just (v) -> case (var_value v) of
             Nothing -> Error "You are trying to read from an empty array"
             Just(Array v) -> Result (readArray v p)
-                        where Result p = (evalAexp pos env)
-evalAexp (ArithmeticIdentifier name) env =
+                        where Result p = (evalAexpr pos env)
+evalAexpr (ArithmeticIdentifier name) env =
     case (readEnv env name "int") of
         Nothing -> Error "The integer variable does not exist"
         Just (v) -> case (var_value v) of
             Nothing -> Error "Empty variable"
             Just(Integer i) -> Result i
-evalAexp (Add a b) env = (+) <$> (evalAexp a env) <*> (evalAexp b env)
-evalAexp (Diff a b) env = (-) <$> (evalAexp a env) <*> (evalAexp b env)
-evalAexp (Div a b) env = if (evalAexp b env) == Result 0
+evalAexpr (Add a b) env = (+) <$> (evalAexpr a env) <*> (evalAexpr b env)
+evalAexpr (Diff a b) env = (-) <$> (evalAexpr a env) <*> (evalAexpr b env)
+evalAexpr (Div a b) env = if (evalAexpr b env) == Result 0
     then error "Division by zero"
-    else (ratio) <$> (evalAexp a env) <*> (evalAexp b env)
-evalAexp (Prod a b) env = (*) <$> (evalAexp a env) <*> (evalAexp b env)
-evalAexp (Power a b) env = (power) <$> (evalAexp a env) <*> (evalAexp b env)
+    else (ratio) <$> (evalAexpr a env) <*> (evalAexpr b env)
+evalAexpr (Prod a b) env = (*) <$> (evalAexpr a env) <*> (evalAexpr b env)
+evalAexpr (Power a b) env = (power) <$> (evalAexpr a env) <*> (evalAexpr b env)
 
 -- Evaluation of the operations that return an entire array
 evalArrayOperation :: AExpr -> Env -> Output [Int]
@@ -102,23 +102,23 @@ evalArrayOperation (ArithmeticIdentifier name) env =
             Nothing -> Error "Empty array"
             Just(Array v) -> Result v
 
-evalBexp :: BExp -> Env -> Output Bool
-evalBexp (BVal b) _ = Result b
-evalBexp (IdentifierBool name) env =
+evalBExpr :: BExpr -> Env -> Output Bool
+evalBExpr (BVal b) _ = Result b
+evalBExpr (IdentifierBool name) env =
     case (readEnv env name "bool") of
         Nothing -> Error "The boolean variable does not exist"
         Just(v) -> case (var_value v) of
             Nothing -> Error "Empty variable"
             Just(Boolean b) ->Result b
-evalBexp (And a b) env = (&&) <$> (evalBexp a env) <*> (evalBexp b env)
-evalBexp (Or a b) env = (||) <$> (evalBexp a env) <*> (evalBexp b env)
-evalBexp (Not a) env = not <$> (evalBexp a env)
-evalBexp (Lt a b) env = (<) <$> (evalAexp a env) <*> (evalAexp b env)
-evalBexp (Gt a b) env = (>) <$> (evalAexp a env) <*> (evalAexp b env)
-evalBexp (Eq a b) env = (==) <$> (evalAexp a env) <*> (evalAexp b env)
-evalBexp (Different a b) env = not <$> (evalBexp (Eq a b) env)
-evalBexp (Lte a b) env = (<=) <$> (evalAexp a env) <*> (evalAexp b env)
-evalBexp (Gte a b) env = (>=) <$> (evalAexp a env) <*> (evalAexp b env)
+evalBExpr (And a b) env = (&&) <$> (evalBExpr a env) <*> (evalBExpr b env)
+evalBExpr (Or a b) env = (||) <$> (evalBExpr a env) <*> (evalBExpr b env)
+evalBExpr (Not a) env = not <$> (evalBExpr a env)
+evalBExpr (Lt a b) env = (<) <$> (evalAexpr a env) <*> (evalAexpr b env)
+evalBExpr (Gt a b) env = (>) <$> (evalAexpr a env) <*> (evalAexpr b env)
+evalBExpr (Eq a b) env = (==) <$> (evalAexpr a env) <*> (evalAexpr b env)
+evalBExpr (Different a b) env = not <$> (evalBExpr (Eq a b) env)
+evalBExpr (Lte a b) env = (<=) <$> (evalAexpr a env) <*> (evalAexpr b env)
+evalBExpr (Gte a b) env = (>=) <$> (evalAexpr a env) <*> (evalAexpr b env)
 
 commandExec :: Com -> Env -> OutputEnv
 commandExec (DeclareInteger name expr) env =
@@ -126,7 +126,7 @@ commandExec (DeclareInteger name expr) env =
         Just(v) -> ErrorEnv ("The variable has already been declared", (DeclareInteger name expr))
         Nothing -> case expr of
             Nothing -> ResultEnv (modifyEnv env Variable{var_name = name, var_type = "int", var_value = Nothing})
-            Just(v) -> case (evalAexp v env) of
+            Just(v) -> case (evalAexpr v env) of
                 Result i -> ResultEnv (modifyEnv env Variable{var_name = name, var_type = "int", var_value = (Just(Integer i))})
                 Error a -> ErrorEnv (a, (DeclareInteger name expr))
 commandExec (DeclareBoolean name expr) env =
@@ -134,7 +134,7 @@ commandExec (DeclareBoolean name expr) env =
         Just(v) -> ErrorEnv("The variable has already been declared", (DeclareBoolean name expr))
         Nothing -> case expr of
             Nothing -> ResultEnv (modifyEnv env Variable{var_name = name, var_type = "bool", var_value = Nothing})
-            Just(v) -> case (evalBexp v env) of
+            Just(v) -> case (evalBExpr v env) of
                 Result b -> ResultEnv (modifyEnv env Variable{var_name = name, var_type = "bool", var_value = (Just(Boolean b))})
                 Error a -> ErrorEnv (a, (DeclareBoolean name expr))
 -- commandExec(DeclareArray "b" (Const 2) (Just( ConstArr [1, 2])))[Variable {var_name = "a", var_type = "array", var_value =  (Just (Array [1]))}] SUCCESS
@@ -147,25 +147,25 @@ commandExec (DeclareArray name dim val) env =
                 True -> ResultEnv (modifyEnv env Variable {var_name = name, var_type = "array", var_value = (Just(Array ar))}) 
                                                     where Result ar = (evalArrayOperation (ConstArr arr) env)
                 False -> ErrorEnv ("The given dimension and the actual length are not equal", (DeclareArray name dim val))
-            where Result s = (evalAexp dim env)
+            where Result s = (evalAexpr dim env)
 -- commandExec (AssignInteger "a" (Const 2)) [Variable {var_name = "a", var_type = "int", var_value = Just(Integer 5)}]
 commandExec (AssignInteger name value) env =
     case (readEnv env name "int") of
         Nothing -> ErrorEnv ("The integer does not exist", (AssignInteger name value))
-        Just(v) -> case (evalAexp value env) of
+        Just(v) -> case (evalAexpr value env) of
             Error a -> ErrorEnv (a, (AssignInteger name value))
             Result i -> ResultEnv (modifyEnv env Variable{var_name = name, var_type = "int", var_value = (Just(Integer i))})
 -- commandExec (AssignBoolean "a" (BVal True)) [Variable {var_name = "a", var_type = "array", var_value =  (Just (Array [(Const 1)]))}]
 commandExec (AssignBoolean name value) env =
     case (readEnv env name "bool") of
         Nothing -> ErrorEnv ("The boolean does not exist", (AssignBoolean name value))
-        Just(v) -> case (evalBexp value env) of
+        Just(v) -> case (evalBExpr value env) of
             Result b -> ResultEnv (modifyEnv env Variable{var_name = name, var_type = "bool", var_value = (Just(Boolean b))})
             Error a -> ErrorEnv (a, (AssignBoolean name value))
 -- commandExec(AssignArrayPosition "a" (Const 0) (Const 1))[Variable {var_name = "a", var_type = "array", var_value = (Just (Array [14,15]))}]
 commandExec (AssignArrayPosition name pos val) env =    --I don't need to check if the array exists because evalArrayOperation already takes care of that
-    case (evalAexp val env) of                  -- Evaluation the value to be put into the array
-        Result r -> case (evalAexp pos env) of         -- Evaluation of the index
+    case (evalAexpr val env) of                  -- Evaluation the value to be put into the array
+        Result r -> case (evalAexpr pos env) of         -- Evaluation of the index
             Result p -> case (evalArrayOperation (ArithmeticIdentifier name) env) of        -- Then I evaluate the identifier in order to retrieve the array
                 Result ar -> case (writeArray ar p r) of        -- Here I try to write in the array
                     Just (v) -> ResultEnv (modifyEnv env Variable{var_name = name, var_type = "array", var_value = (Just(Array v))})
@@ -206,7 +206,7 @@ programExec ((AssignWholeArray name ar) : cs) env = case (commandExec (AssignWho
     ErrorEnv (e, c) -> ErrorEnv (e, c)
     ResultEnv new_env -> programExec cs new_env
 programExec ((Ifelse cond progA progB) : cs) env = 
-    case (evalBexp cond env) of
+    case (evalBExpr cond env) of
         Error a -> ErrorEnv (a, (Ifelse cond progA progB))
         Result True -> programExec (progA ++ cs) env
         Result False ->
@@ -214,14 +214,14 @@ programExec ((Ifelse cond progA progB) : cs) env =
                 Nothing -> programExec cs env
                 Just(com) -> programExec (com ++ cs) env
 programExec ((Whiledo cond prog) : cs) env =
-    case (evalBexp cond env) of
+    case (evalBExpr cond env) of
         Error a -> ErrorEnv (a, (Whiledo cond prog))
         Result True -> programExec (prog ++ [Whiledo cond prog] ++ cs) env
         Result False -> programExec cs env
 programExec ((Dowhile prog cond) : cs) env =
     case (programExec prog env) of
         ErrorEnv (msg, com) -> ErrorEnv (msg, (Dowhile prog cond))
-        ResultEnv env -> case (evalBexp cond env) of
+        ResultEnv env -> case (evalBExpr cond env) of
             Error a -> ErrorEnv (a, (Dowhile prog cond))
             Result True -> programExec ([Dowhile prog cond] ++ cs) env
             Result False -> programExec cs env
