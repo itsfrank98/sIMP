@@ -18,7 +18,7 @@ com ::= declareBoolean ";"
     | assignInteger ";"
     | ifelse
     | whiledo
-	| dowhile ";"
+    | dowhile ";"
     | skip ";"
 
 
