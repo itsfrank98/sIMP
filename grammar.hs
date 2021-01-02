@@ -26,7 +26,7 @@ data AExpr =
 -- Boolean expressions
 data BExpr =
     BVal Bool
-    | IdentifierBool String
+    | BooleanIdentifier String
     | And BExpr BExpr
     | Or BExpr BExpr
     | Not BExpr

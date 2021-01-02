@@ -238,19 +238,19 @@ arithmeticFactor = do
 
 -- Boolean expressions Parser
 bExprP :: Parser  BExpr
-bExprP = booleanParser1 `chain` op where
+bExprP = booleanTerm `chain` op where
     op = do
         symbolP "or"
         return Or
 
-booleanParser1 :: Parser BExpr
-booleanParser1 = booleanParser2 `chain` op where
+booleanTerm :: Parser BExpr
+booleanTerm = booleanFactor `chain` op where
     op = do
         symbolP "and"
         return And
 
-booleanParser2 :: Parser BExpr
-booleanParser2 = do
+booleanFactor :: Parser BExpr
+booleanFactor = do
     symbolP "True"
     return (BVal True)
     <|>
@@ -296,7 +296,7 @@ booleanParser2 = do
     <|>
     do
         i <- identifierP
-        return (IdentifierBool i)
+        return (BooleanIdentifier i)
 
 
 -- Parser of commands

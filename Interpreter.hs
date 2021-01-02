@@ -104,7 +104,7 @@ evalArrayOperation (ArithmeticIdentifier name) env =
 
 evalBExpr :: BExpr -> Env -> Output Bool
 evalBExpr (BVal b) _ = Result b
-evalBExpr (IdentifierBool name) env =
+evalBExpr (BooleanIdentifier name) env =
     case (readEnv env name "bool") of
         Nothing -> Error "The boolean variable does not exist"
         Just(v) -> case (var_value v) of
