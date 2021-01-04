@@ -227,6 +227,13 @@ arithmeticFactor = do
         (ConstArr <$> arrayP)
     <|>
     do
+        symbolP "top"
+        symbolP "("
+        name <- identifierP
+        symbolP ")"
+        return (Top name)
+    <|>
+    do
         i <- identifierP
         do
             symbolP "["
@@ -257,6 +264,13 @@ booleanFactor = do
     do
         symbolP "False"
         return (BVal False)
+    <|>
+    do
+        symbolP "empty"
+        symbolP "("
+        name <- identifierP
+        symbolP ")"
+        return (Empty name)
     <|>
     do
         symbolP "("
@@ -308,6 +322,8 @@ commandP =
     <|>
     arrayDeclare
     <|>
+    stackDeclare
+    <|>
     integerAssign
     <|>
     booleanAssign
@@ -315,6 +331,10 @@ commandP =
     arrayAssignPosition
     <|>
     arrayAssignWhole
+    <|>
+    push 
+    <|>
+    pop
     <|>
     ifThenElse
     <|>
@@ -372,6 +392,13 @@ arrayDeclare = do
             symbolP ";"
             return (DeclareArray name size Nothing)
 
+stackDeclare :: Parser Com
+stackDeclare = do
+    symbolP "stack"
+    name <- identifierP
+    symbolP ";"
+    return (DeclareStack name)
+
 booleanAssign :: Parser Com
 booleanAssign = do
     name <- identifierP
@@ -387,6 +414,26 @@ integerAssign = do
     val <- aExprP
     symbolP ";"
     return (AssignInteger name val)
+
+push :: Parser Com
+push = do
+    symbolP "push"
+    symbolP "("
+    name <- identifierP
+    symbolP ","
+    val <- aExprP
+    symbolP ")"
+    symbolP ";"
+    return (Push name val)
+
+pop :: Parser Com
+pop = do
+    symbolP "pop"
+    symbolP "("
+    name <- identifierP
+    symbolP ")"
+    symbolP ";"
+    return (Pop name)
 
 arrayAssignPosition :: Parser Com
 arrayAssignPosition = do
