@@ -12,10 +12,13 @@ program ::= com | program
 com ::= declareBoolean ";"
     | declareInteger ";"
     | declareArray ";"
+    | declareStack ";"
     | assignBoolean ";"
     | assignArrayPosition ";"
     | assignWholeArray ";"
     | assignInteger ";"
+    | push ";"
+    | pop ";"
     | ifelse
     | whiledo
     | dowhile ";"
@@ -39,10 +42,13 @@ constArr ::= "[" {AExpr ","} AExpr "]"
 declareBoolean ::= "bool" booleanIdentifier {"=" BExpr}
 declareInteger ::= "int" arithmeticIdentifier {"=" AExpr}
 declareArray ::= "array[" AExpr "]" arithmeticIdentifier {"=" constArr}
+declareStack ::= "stack" arithmeticIdentifier
 assignBoolean ::= booleanIdentifier "=" BExp
 assignArrayPosition ::= arithmeticIdentifier "[" AExpr "]" "=" AExpr
 assignWholeArray ::= arithmeticIdentifier "=" constArr
 assignInteger ::= arithmeticIdentifier "=" AExpr
+push ::= "push" "(" arithmeticIdentifier "," AExpr ")"
+pop ::= "pop" "(" arithmeticIdentifier ")"
 ifelse ::= "if" "(" BExp ")" "{" program "}" {"else" "{" program "}"}
 whiledo ::= "while" "(" BExp ")" "{" program "}"
 dowhile ::= "do" "{" program "}" "while" "(" BExp ")"
@@ -51,16 +57,19 @@ skip ::= "skip"
 AExpr ::= arithmeticTerm {{"+" | "-"} arithmeticTerm}
 
 arithmeticTerm ::= arithmeticFactor {{"*" | "/" | "^"} arithmeticFactor}
-arithmeticFactor ::= integer
+arithmeticFactor ::= "(" AExpr ")"
+    | integer
 	| constArr
+    | "top" "(" arithmeticIdentifier ")"
     | arithmeticIdentifier
     | arithmeticIdentifier "[" AExpr "]"
-	| "(" AExpr ")"
+	
     
 BExpr ::= booleanTerm {"or" booleanTerm}
 booleanTerm ::= booleanFactor {"and" booleanFactor}
 booleanFactor ::= "True"
 	| "False"
+    | "empty" "(" arithmeticIdentifier ")"
     | booleanIdentifier
     | "(" BExpr ")"
     | "!" BExpr
