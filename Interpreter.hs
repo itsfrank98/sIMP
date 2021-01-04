@@ -84,6 +84,13 @@ evalAexpr (ArithmeticIdentifier name) env =
         Just (v) -> case (var_value v) of
             Nothing -> Error "Empty variable"
             Just(Integer i) -> Result i
+evalAexpr (Top name) env =
+    case (readEnv env name "stack") of
+        Nothing -> Error "The stack does not exist"
+        Just (v) -> case (length s == 0) of
+            True -> Error "Empty stack!"
+            False -> Result (readArray s ((length s) - 1))
+            where Just (Stack s) = (var_value v)
 evalAexpr (Add a b) env = (+) <$> (evalAexpr a env) <*> (evalAexpr b env)
 evalAexpr (Diff a b) env = (-) <$> (evalAexpr a env) <*> (evalAexpr b env)
 evalAexpr (Div a b) env = if (evalAexpr b env) == Result 0
@@ -110,6 +117,10 @@ evalBExpr (BooleanIdentifier name) env =
         Just(v) -> case (var_value v) of
             Nothing -> Error "Empty variable"
             Just(Boolean b) ->Result b
+evalBExpr (Empty name) env = case (readEnv env name "stack") of
+        Nothing -> Error "The stack does not exist"
+        Just (v) -> Result (length s == 0) 
+            where Just (Stack s) = (var_value v)
 evalBExpr (And a b) env = (&&) <$> (evalBExpr a env) <*> (evalBExpr b env)
 evalBExpr (Or a b) env = (||) <$> (evalBExpr a env) <*> (evalBExpr b env)
 evalBExpr (Not a) env = not <$> (evalBExpr a env)
@@ -121,14 +132,6 @@ evalBExpr (Lte a b) env = (<=) <$> (evalAexpr a env) <*> (evalAexpr b env)
 evalBExpr (Gte a b) env = (>=) <$> (evalAexpr a env) <*> (evalAexpr b env)
 
 commandExec :: Com -> Env -> OutputEnv
-commandExec (DeclareInteger name expr) env =
-    case (readEnv env name "int") of
-        Just(v) -> ErrorEnv ("The variable has already been declared", (DeclareInteger name expr))
-        Nothing -> case expr of
-            Nothing -> ResultEnv (modifyEnv env Variable{var_name = name, var_type = "int", var_value = Nothing})
-            Just(v) -> case (evalAexpr v env) of
-                Result i -> ResultEnv (modifyEnv env Variable{var_name = name, var_type = "int", var_value = (Just(Integer i))})
-                Error a -> ErrorEnv (a, (DeclareInteger name expr))
 commandExec (DeclareBoolean name expr) env =
     case (readEnv env name "bool") of
         Just(v) -> ErrorEnv("The variable has already been declared", (DeclareBoolean name expr))
@@ -137,6 +140,14 @@ commandExec (DeclareBoolean name expr) env =
             Just(v) -> case (evalBExpr v env) of
                 Result b -> ResultEnv (modifyEnv env Variable{var_name = name, var_type = "bool", var_value = (Just(Boolean b))})
                 Error a -> ErrorEnv (a, (DeclareBoolean name expr))
+commandExec (DeclareInteger name expr) env =
+    case (readEnv env name "int") of
+        Just(v) -> ErrorEnv ("The variable has already been declared", (DeclareInteger name expr))
+        Nothing -> case expr of
+            Nothing -> ResultEnv (modifyEnv env Variable{var_name = name, var_type = "int", var_value = Nothing})
+            Just(v) -> case (evalAexpr v env) of
+                Result i -> ResultEnv (modifyEnv env Variable{var_name = name, var_type = "int", var_value = (Just(Integer i))})
+                Error a -> ErrorEnv (a, (DeclareInteger name expr))
 -- commandExec(DeclareArray "b" (Const 2) (Just( ConstArr [1, 2])))[Variable {var_name = "a", var_type = "array", var_value =  (Just (Array [1]))}] SUCCESS
 commandExec (DeclareArray name dim val) env =
     case (readEnv env name "array") of
@@ -148,13 +159,10 @@ commandExec (DeclareArray name dim val) env =
                                                     where Result ar = (evalArrayOperation (ConstArr arr) env)
                 False -> ErrorEnv ("The given dimension and the actual length are not equal", (DeclareArray name dim val))
             where Result s = (evalAexpr dim env)
--- commandExec (AssignInteger "a" (Const 2)) [Variable {var_name = "a", var_type = "int", var_value = Just(Integer 5)}]
-commandExec (AssignInteger name value) env =
-    case (readEnv env name "int") of
-        Nothing -> ErrorEnv ("The integer does not exist", (AssignInteger name value))
-        Just(v) -> case (evalAexpr value env) of
-            Error a -> ErrorEnv (a, (AssignInteger name value))
-            Result i -> ResultEnv (modifyEnv env Variable{var_name = name, var_type = "int", var_value = (Just(Integer i))})
+commandExec (DeclareStack name) env =
+    case (readEnv env name "stack") of
+        Just(v) -> ErrorEnv ("The array has already been declared", (DeclareStack name))
+        Nothing -> ResultEnv (modifyEnv env Variable {var_name = name, var_type = "stack", var_value = (Just(Stack []))})
 -- commandExec (AssignBoolean "a" (BVal True)) [Variable {var_name = "a", var_type = "array", var_value =  (Just (Array [(Const 1)]))}]
 commandExec (AssignBoolean name value) env =
     case (readEnv env name "bool") of
@@ -162,6 +170,13 @@ commandExec (AssignBoolean name value) env =
         Just(v) -> case (evalBExpr value env) of
             Result b -> ResultEnv (modifyEnv env Variable{var_name = name, var_type = "bool", var_value = (Just(Boolean b))})
             Error a -> ErrorEnv (a, (AssignBoolean name value))
+-- commandExec (AssignInteger "a" (Const 2)) [Variable {var_name = "a", var_type = "int", var_value = Just(Integer 5)}]
+commandExec (AssignInteger name value) env =
+    case (readEnv env name "int") of
+        Nothing -> ErrorEnv ("The integer does not exist", (AssignInteger name value))
+        Just(v) -> case (evalAexpr value env) of
+            Error a -> ErrorEnv (a, (AssignInteger name value))
+            Result i -> ResultEnv (modifyEnv env Variable{var_name = name, var_type = "int", var_value = (Just(Integer i))})
 -- commandExec(AssignArrayPosition "a" (Const 0) (Const 1))[Variable {var_name = "a", var_type = "array", var_value = (Just (Array [14,15]))}]
 commandExec (AssignArrayPosition name pos val) env =    --I don't need to check if the array exists because evalArrayOperation already takes care of that
     case (evalAexpr val env) of                  -- Evaluation the value to be put into the array
@@ -181,22 +196,41 @@ commandExec (AssignWholeArray name ar) env =
                 False -> ErrorEnv ("Mismatching length", (AssignWholeArray name ar))
             Error e1 -> ErrorEnv (e1, (AssignWholeArray name ar))
         Error e2 -> ErrorEnv (e2, (AssignWholeArray name ar))
+--commandExec (Push "a" (Const 0))[Variable {var_name = "a", var_type = "stack", var_value = (Just (Stack [14, 21]))}]
+commandExec (Push name val) env =
+    case (readEnv env name "stack") of
+        Nothing -> ErrorEnv ("The stack does not exist", (Push name val))
+        Just(v) -> case (evalAexpr val env) of
+            Error a -> ErrorEnv (a, (Push name val))
+            Result i -> ResultEnv (modifyEnv env Variable {var_name = name, var_type = "stack", var_value = (Just(Stack (s ++ [i])))})
+                        where Just (Stack s) = (var_value v)
+--commandExec (Pop "a")[Variable {var_name = "a", var_type = "stack", var_value = (Just (Stack [14, 21]))}]
+commandExec (Pop name) env =
+    case (readEnv env name "stack") of
+        Nothing -> ErrorEnv ("The stack does not exist", (Pop name))
+        Just(v) -> case (length s == 0) of
+            True -> ErrorEnv ("Can't pop from an empty stack!", (Pop name))
+            False -> ResultEnv (modifyEnv env Variable {var_name = name, var_type = "stack", var_value = (Just(Stack (removeElem s ((length s)-1))))})
+            where Just (Stack s) = (var_value v)
 
 programExec :: [Com] -> Env -> OutputEnv
 programExec [] env = ResultEnv env
-programExec ((DeclareInteger name expr) : cs) env = case (commandExec (DeclareInteger name expr) env) of
+programExec ((DeclareBoolean name expr) : cs) env = case (commandExec (DeclareBoolean name expr) env) of
     ErrorEnv (e, c) -> ErrorEnv (e, c)
     ResultEnv new_env -> programExec cs new_env
-programExec ((DeclareBoolean name expr) : cs) env = case (commandExec (DeclareBoolean name expr) env) of
+programExec ((DeclareInteger name expr) : cs) env = case (commandExec (DeclareInteger name expr) env) of
     ErrorEnv (e, c) -> ErrorEnv (e, c)
     ResultEnv new_env -> programExec cs new_env
 programExec ((DeclareArray name dim val) : cs) env = case (commandExec (DeclareArray name dim val) env) of
     ErrorEnv (e, c) -> ErrorEnv (e, c)
     ResultEnv new_env -> programExec cs new_env
-programExec ((AssignInteger name value) : cs) env = case (commandExec (AssignInteger name value) env) of
+programExec ((DeclareStack name) : cs) env = case (commandExec (DeclareStack name) env) of
     ErrorEnv (e, c) -> ErrorEnv (e, c)
     ResultEnv new_env -> programExec cs new_env
 programExec ((AssignBoolean name value) : cs) env = case (commandExec (AssignBoolean name value) env) of
+    ErrorEnv (e, c) -> ErrorEnv (e, c)
+    ResultEnv new_env -> programExec cs new_env
+programExec ((AssignInteger name value) : cs) env = case (commandExec (AssignInteger name value) env) of
     ErrorEnv (e, c) -> ErrorEnv (e, c)
     ResultEnv new_env -> programExec cs new_env
 programExec ((AssignArrayPosition name pos val) : cs) env = case (commandExec (AssignArrayPosition name pos val) env) of
@@ -205,6 +239,12 @@ programExec ((AssignArrayPosition name pos val) : cs) env = case (commandExec (A
 programExec ((AssignWholeArray name ar) : cs) env = case (commandExec (AssignWholeArray name ar) env) of
     ErrorEnv (e, c) -> ErrorEnv (e, c)
     ResultEnv new_env -> programExec cs new_env
+programExec ((Push name value) : cs) env = case (commandExec (Push name value) env) of
+    ErrorEnv (e, c) -> ErrorEnv (e, c)
+    ResultEnv new_env -> programExec cs new_env
+programExec ((Pop name) : cs) env = case (commandExec (Pop name) env) of
+    ErrorEnv (e, c) -> ErrorEnv (e, c)
+    ResultEnv new_env -> programExec cs new_env    
 programExec ((Ifelse cond progA progB) : cs) env = 
     case (evalBExpr cond env) of
         Error a -> ErrorEnv (a, (Ifelse cond progA progB))

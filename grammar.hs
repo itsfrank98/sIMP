@@ -4,11 +4,13 @@ data Values =
     Integer Int
     | Boolean Bool
     | Array [Int]
+    | Stack [Int]
 
 instance Show Values where
     show (Integer a) = "Integer " ++ show a
     show (Boolean b) = "Boolean " ++ show b
     show (Array ar) = "Array " ++ show ar
+    show (Stack st) = "Stack " ++ show st
 
 --Arithmetic expressions
 data AExpr =
@@ -16,6 +18,7 @@ data AExpr =
     | ConstArr [Int]
     | Ar String AExpr
     | ArithmeticIdentifier String
+    | Top String
     | Add AExpr AExpr
     | Diff AExpr AExpr
     | Div AExpr AExpr
@@ -27,6 +30,7 @@ data AExpr =
 data BExpr =
     BVal Bool
     | BooleanIdentifier String
+    | Empty String
     | And BExpr BExpr
     | Or BExpr BExpr
     | Not BExpr
@@ -42,10 +46,13 @@ data BExpr =
 data Com = DeclareBoolean String (Maybe BExpr)
     | DeclareInteger String (Maybe AExpr)
     | DeclareArray String AExpr (Maybe AExpr)
+    | DeclareStack String
     | AssignBoolean String BExpr
+    | AssignInteger String AExpr
     | AssignArrayPosition String AExpr AExpr --Assign a value to a specific array cell. Example: array[4] = 5
     | AssignWholeArray String AExpr --Assign whole array to a pre-declared variable. Example: a = [1,2,3,4]
-    | AssignInteger String AExpr
+    | Push String AExpr
+    | Pop String 
     | Ifelse BExpr Program (Maybe Program)
     | Whiledo BExpr Program
     | Dowhile Program BExpr
