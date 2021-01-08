@@ -82,7 +82,8 @@ booleanFactor ::= "True"
 ```
 
 <h2> Example of program written in sIMP (more examples can be found in the test section) </h2>
-```lang-none
+
+```
 int a = 0; 
 int b; 
 if(a == 0){ 
@@ -93,22 +94,3 @@ if(a == 0){
 ```
 
 Chack out the documentation for a more accurate description of the language.
- 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
