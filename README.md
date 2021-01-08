@@ -81,6 +81,16 @@ booleanFactor ::= "True"
     | AExpr ">=" AExpr
 ```
 
+<h2> Example of program written in sIMP (more examples can be found in the test section) </h2>
+```lang-none
+int a = 0; 
+int b; 
+if(a == 0){ 
+	b = 1; 
+} else{ 
+	b = 2; 
+}
+
 
 
 
