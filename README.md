@@ -96,9 +96,9 @@ if(a == 0){
 Chack out the documentation for a more accurate description of the language.
 
 <h2> Current limitations </h2>
-At the current state, sIMP has the following limitations (as far as I can tell):
-- The user is allowed to use the keywords of the language (if, else and so on) as names for the variables, which is something that should not happen;
-- The stack operations can only be done passing the name of the stack. We can't do the following:
+At the current state, sIMP has the following limitations (as far as I can tell): <br />
+* The user is allowed to use the keywords of the language (if, else and so on) as names for the variables, which is something that should not happen; <br />
+* The stack operations can only be done passing the name of the stack. We can't do the following:
 
 ```
 stack a;
