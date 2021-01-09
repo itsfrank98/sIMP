@@ -94,3 +94,14 @@ if(a == 0){
 ```
 
 Chack out the documentation for a more accurate description of the language.
+
+<h2> Current limitations </h2>
+At the current state, sIMP has the following limitations (as far as I can tell):
+* The user is allowed to use the keywords of the language (if, else and so on) as names for the variables, which is something that should not happen.
+* The stack operations can only be done passing the name of the stack. We can't do the following:
+
+```
+stack a;
+empty(pop(push(a,1)));
+```
+because we will get a parser error. Moving the push and pop operations in the AExp section should solve this
