@@ -104,4 +104,4 @@ At the current state, sIMP has the following limitations (as far as I can tell):
 stack a;
 empty(pop(push(a,1)));
 ```
-because we will get a parser error. Moving the push and pop operations in the AExp section should solve this
+because we will get a parser error.
